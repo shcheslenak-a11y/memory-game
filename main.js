@@ -22,8 +22,8 @@ function newGame(){
     array.sort(() => Math.random() - 0.5).forEach(element => {
         cards.appendChild(generateCard(element))
     });
-    document.getElementById("turns").innerHTML = turns;
-    document.getElementById("matched").innerHTML = matched;
+    document.getElementById("turns").textContent = turns;
+    document.getElementById("matched").textContent = matched;
 
     for(let el of document.getElementsByClassName("card")) {
     el.addEventListener("click", (event) => {
@@ -38,14 +38,15 @@ function newGame(){
                 el.classList.add("matched");
                 current.classList.add("matched");
                 matched += 1;
-                document.getElementById("matched").innerHTML = matched;
+                document.getElementById("matched").textContent = matched;
             }
             turns += 1;
-            document.getElementById("turns").innerHTML = turns;
+            document.getElementById("turns").textContent = turns;
             window.setTimeout(() => {
                 el.classList.remove("clicked");
                 current.classList.remove("clicked");
             }, 1000);
+            endGame()
         }
         if (matched == 8) endGame();
         
@@ -57,37 +58,54 @@ newGame()
 
 document.getElementById("new-game").addEventListener("click", newGame)
 
-
-
-function closeModal(){
-    document.getElementById("modal").close()
-}
-
 function generateButton(inner, callback, id=null){
     let button = document.createElement("div")
     button.classList.add("button");
-    button.innerHTML=inner;
+    button.append(inner);
     button.addEventListener("click", callback);
     if (id) button.id = id;
     return button;
 }
 
 
+function closeModal(){
+    document.getElementById("modal").close()
+}
+
+function showModal(header, modalContent){
+    document.getElementById("dialog-header").textContent = header;
+    let modal = document.getElementById("modal")
+    let content =  document.getElementById("dialog-content")
+    content.replaceChildren()
+    content.append(...modalContent)
+    modal.showModal();
+}
+
+function getLeaders(){
+    return JSON.parse(storage.getItem("leaders") || "[]")
+}
 
 function endGame(){
-    let modal = document.getElementById("modal")
-    document.getElementById("dialog-header").textContent = "Congratilation";
 
     var today = new Date();
     var dd = String(today.getDate()).padStart(2, '0');
     var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
     var yyyy = today.getFullYear();
     let currentDate = `${dd}.${mm}.${yyyy}`
-    
-    let content =  document.getElementById("dialog-content")
-    content.replaceChildren()
+
     let block = document.createElement("div")
     block.classList.add("result");
+
+    let leaders = getLeaders()
+    let i = 0;
+    for(; i<leaders.length; i++){
+        if (turns < leaders[i][0])
+            break
+    }
+    leaders.splice(i, 0, [turns, currentDate])
+    while (leaders.length > 10) { leaders.pop();}
+
+    storage.setItem("leaders",  JSON.stringify(leaders))
 
     let H = document.createElement("h3")
     let T = document.createElement("p")
@@ -98,9 +116,37 @@ function endGame(){
     D.textContent = `Date: ${currentDate}`
 
     block.append(H, T, D)
-    content.append(
-        block,
-        generateButton("New Game", () => {closeModal();newGame()})
-    )
-    modal.showModal();
+
+
+    showModal("Congratilation", [block , generateButton("New Game", () => {closeModal();newGame()})])
 }
+
+function formTableRow(data, header=false){
+    let row = document.createElement("tr")
+    data.forEach(el => {
+        let rowdata = document.createElement(header? "th" : "td");
+        rowdata.innerHTML=el;
+        row.appendChild(rowdata);
+    });
+    return row;
+}
+
+function formLeaderTable() {
+    
+    let leaders = getLeaders()
+    if (leaders.length){
+        let table = document.createElement("table");
+        [["turns", "Date"]].concat(leaders).forEach((row, index) => {
+            console.log(row)
+            table.appendChild(formTableRow([index || "#"].concat(row), index == 0));
+        });
+        return table
+    } else {
+        let p = document.createElement("p");
+        p.textContent = "Ops! It's nothing here. Please finish the game to have record."
+        return p
+    }
+}
+
+document.getElementById("leaders").addEventListener("click", () => {showModal("Leader Board", [formLeaderTable()])})
+
