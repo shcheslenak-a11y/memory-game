@@ -1,4 +1,5 @@
 var array = [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8];
+let storage = window.localStorage;
 var turns;
 var matched;
 
@@ -21,15 +22,10 @@ function newGame(){
     array.sort(() => Math.random() - 0.5).forEach(element => {
         cards.appendChild(generateCard(element))
     });
-    document.getElementById("turns").innerHTML=turns;
-    document.getElementById("matched").innerHTML=matched;
-}
+    document.getElementById("turns").innerHTML = turns;
+    document.getElementById("matched").innerHTML = matched;
 
-newGame()
-
-document.getElementById("new-game").addEventListener("click", newGame)
-
-for(let el of document.getElementsByClassName("card")) {
+    for(let el of document.getElementsByClassName("card")) {
     el.addEventListener("click", (event) => {
         if (el.classList.contains("matched")) return;
         let current = document.getElementsByClassName("clicked")
@@ -52,5 +48,59 @@ for(let el of document.getElementsByClassName("card")) {
             }, 1000);
         }
         if (matched == 8) endGame();
+        
     })
+}
+}
+
+newGame()
+
+document.getElementById("new-game").addEventListener("click", newGame)
+
+
+
+function closeModal(){
+    document.getElementById("modal").close()
+}
+
+function generateButton(inner, callback, id=null){
+    let button = document.createElement("div")
+    button.classList.add("button");
+    button.innerHTML=inner;
+    button.addEventListener("click", callback);
+    if (id) button.id = id;
+    return button;
+}
+
+
+
+function endGame(){
+    let modal = document.getElementById("modal")
+    document.getElementById("dialog-header").textContent = "Congratilation";
+
+    var today = new Date();
+    var dd = String(today.getDate()).padStart(2, '0');
+    var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+    var yyyy = today.getFullYear();
+    let currentDate = `${dd}.${mm}.${yyyy}`
+    
+    let content =  document.getElementById("dialog-content")
+    content.replaceChildren()
+    let block = document.createElement("div")
+    block.classList.add("result");
+
+    let H = document.createElement("h3")
+    let T = document.createElement("p")
+    let D = document.createElement("p")
+
+    H.textContent = "You succesfully finish game"
+    T.textContent = `Turns: ${turns}`
+    D.textContent = `Date: ${currentDate}`
+
+    block.append(H, T, D)
+    content.append(
+        block,
+        generateButton("New Game", () => {closeModal();newGame()})
+    )
+    modal.showModal();
 }
