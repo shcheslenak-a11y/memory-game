@@ -44,11 +44,20 @@ main {
     height: 200px;
     border-radius: 50px;
     box-sizing: border-box;
+    transition: transform 0.8s;
+    transform-style: preserve-3d;
+    backface-visibility: hidden;
+    background: url("images/cover.jpg");
 }
-
 
 .card img {
     width:100%;
     height: 100%;
+    backface-visibility: hidden;
+    transform: rotateY(180deg);
     border-radius: 50px;
+}
+
+.clicked, .matched {
+    transform: rotateY(180deg);
 }
