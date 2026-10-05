@@ -33,7 +33,6 @@ function newGame(){
         current = current[0];
         el.classList.add("clicked");
         if(current) {
-            console.log(current, el)
             if (el.dataset.id == current.dataset.id) {
                 el.classList.add("matched");
                 current.classList.add("matched");
@@ -46,7 +45,6 @@ function newGame(){
                 el.classList.remove("clicked");
                 current.classList.remove("clicked");
             }, 1000);
-            endGame()
         }
         if (matched == 8) endGame();
         
@@ -54,9 +52,9 @@ function newGame(){
 }
 }
 
-newGame()
+//newGame()
 
-document.getElementById("new-game").addEventListener("click", newGame)
+//document.getElementById("new-game").addEventListener("click", newGame)
 
 function generateButton(inner, callback, id=null){
     let button = document.createElement("div")
@@ -125,7 +123,7 @@ function formTableRow(data, header=false){
     let row = document.createElement("tr")
     data.forEach(el => {
         let rowdata = document.createElement(header? "th" : "td");
-        rowdata.innerHTML=el;
+        rowdata.textContent=el;
         row.appendChild(rowdata);
     });
     return row;
@@ -137,7 +135,6 @@ function formLeaderTable() {
     if (leaders.length){
         let table = document.createElement("table");
         [["turns", "Date"]].concat(leaders).forEach((row, index) => {
-            console.log(row)
             table.appendChild(formTableRow([index || "#"].concat(row), index == 0));
         });
         return table
@@ -148,5 +145,49 @@ function formLeaderTable() {
     }
 }
 
-document.getElementById("leaders").addEventListener("click", () => {showModal("Leader Board", [formLeaderTable()])})
+function createText(tag, text, id=null) {
+    let T = document.createElement(tag)
+    T.textContent = text
+    if (id) T.id = id
+    return T
+}
+//document.getElementById("leaders").addEventListener("click", () => {showModal("Leader Board", [formLeaderTable()])})
 
+function onLoad() {
+    let header = document.createElement("header")
+
+    header.append(
+        generateButton(createText("h2", "New Game"), newGame),
+        generateButton(createText("h2","Leaders"), () => { showModal("Leader Board", [formLeaderTable()]) })
+    )
+
+    let main = document.createElement("main")
+
+    let counters = document.createElement("div")
+    counters.id = "counters"
+    let turns = document.createElement("p")
+    turns.append("Turns: ", createText("span", 0, "turns"))
+    let matches = document.createElement("p")
+    matches.append(createText("span", 0, "matched"), " from 8 pairs found")
+    
+    counters.append(turns, matches)
+    
+    main.append(counters, createText("div", "", "cards"))
+
+    let dialog = document.createElement("dialog")
+    dialog.id="modal"
+    
+    let inner = document.createElement("div")
+    inner.classList.add("inner")
+    inner.append(
+        createText("h2", "", "dialog-header"),
+        createText("div", "", "dialog-content"),
+        generateButton("Close", closeModal)
+    )
+    dialog.append(inner)
+
+    document.body.append(header, main, dialog)
+    newGame()
+}
+
+onLoad()
