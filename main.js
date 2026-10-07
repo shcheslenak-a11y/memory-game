@@ -27,7 +27,7 @@ function newGame(){
 
     for(let el of document.getElementsByClassName("card")) {
     el.addEventListener("click", (event) => {
-        if (el.classList.contains("matched")) return;
+        if (el.classList.contains("matched") || el.classList.contains("clicked")) return;
         let current = document.getElementsByClassName("clicked")
         if (current.length > 1) return;
         current = current[0];
